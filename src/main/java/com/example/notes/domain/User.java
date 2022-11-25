@@ -20,8 +20,8 @@ import java.util.UUID;
 @Table(name = "\"users\"")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "profile_seq")
-    @SequenceGenerator(name = "profile_seq", sequenceName = "hibernate_sequence_pr", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
+    @SequenceGenerator(name = "user_seq", sequenceName = "hibernate_sequence_us", allocationSize = 1)
     private int id;
 
     @Column(name = "\"uuid\"", nullable = false)
@@ -44,12 +44,12 @@ public class User {
     private Role idRole;
 
     @CreatedDate
-    @Column(name = "\"sign_up_date\"")
-    protected LocalDateTime signUpDate = LocalDateTime.now();
+    @Column(name = "\"created\"", updatable = false)
+    protected LocalDateTime created = LocalDateTime.now();
 
     @LastModifiedDate
-    @Column(name = "\"last_visit_date\"")
-    protected LocalDateTime lastVisitDate = LocalDateTime.now();
+    @Column(name = "\"modified\"")
+    protected LocalDateTime modified = LocalDateTime.now();
 
     public User(String login, String password, String userName, Role idRole) {
         this.login = login;
