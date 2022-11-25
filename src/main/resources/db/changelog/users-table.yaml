@@ -3,48 +3,52 @@ databaseChangeLog:
       id: 0
       author: Nikita.Zachvatov
       failOnError: true
-      comment: "Create hibernate_sequence, needed by envers audit"
+      comment: "Create table users"
       changes:
         - createSequence:
-            sequenceName: hibernate_sequence_pr
+            sequenceName: hibernate_sequence_us
             incrementBy: 1
             cycle: false
             cacheSize: 1
             minValue: 1
             startValue: 1
+  - changeSet:
+      id: 1
+      author: Nikita.Zachvatov
+      changes:
         - createTable:
-            tableName: profiles
+            tableName: users
             columns:
-              - column:
-                  name: id
-                  type: int
-                  autoIncrement: true
-                  constraints:
-                    nullable: false
               - column:
                   name: uuid
                   type: UUID
               - column:
-                  name: name
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: login
                   type: varchar(50)
               - column:
-                  name: surname
+                  name: user_name
                   type: varchar(50)
               - column:
-                  name: sex
+                  name: password
                   type: varchar(50)
               - column:
-                  name: birthday
-                  type: date
+                  name: id_role
+                  type: varchar(50)
               - column:
-                  name: sign_up_date
+                  name: created
                   type: datetime
               - column:
-                  name: last_visit_date
+                  name: modified
                   type: datetime
         - addPrimaryKey:
             columnNames: id
-            tableName: profiles
+            tableName: users
         - createIndex:
             clustered: true
             columns:
@@ -53,5 +57,9 @@ databaseChangeLog:
                   name: uuid
             indexName: idx_uuid
             schemaName: public
-            tableName: profiles
+            tableName: users
             unique: true
+        - addUniqueConstraint:
+            columnNames: login
+            constraintName: login_should_be_unique
+            tableName: users
