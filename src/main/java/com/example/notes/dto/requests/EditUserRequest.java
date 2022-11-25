@@ -11,10 +11,7 @@ import javax.validation.constraints.Size;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateUserRequest {
-    @NotBlank(message = "Login may not be empty")
-    @Size(min = 2, max = 32)
-    String login;
+public class EditUserRequest {
     @NotBlank(message = "Password may not be empty")
     @Size(min = 5, max = 32)
     String password;
