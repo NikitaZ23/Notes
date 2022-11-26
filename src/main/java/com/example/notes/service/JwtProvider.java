@@ -1,6 +1,6 @@
 package com.example.notes.service;
 
-import com.example.notes.domain.UserAuth;
+import com.example.notes.domain.User;
 import io.jsonwebtoken.*;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ public class JwtProvider {
         this.jwtRefreshSecret = jwtRefreshSecret;
     }
 
-    public String generateAccessToken(@NonNull UserAuth user) {
+    public String generateAccessToken(@NonNull User user) {
         LocalDateTime now = LocalDateTime.now();
         Instant accessExpirationInstant = now.plusMinutes(5).atZone(ZoneId.systemDefault()).toInstant();
         Date accessExpiration = Date.from(accessExpirationInstant);
@@ -33,12 +33,12 @@ public class JwtProvider {
                 .setSubject(user.getLogin())
                 .setExpiration(accessExpiration)
                 .signWith(SignatureAlgorithm.HS512, jwtAccessSecret)
-                .claim("roles", user.getRoles())
-                .claim("firstName", user.getFirstName())
+                .claim("idRole", user.getIdRole())
+                .claim("userName", user.getUserName())
                 .compact();
     }
 
-    public String generateRefreshToken(@NonNull UserAuth user) {
+    public String generateRefreshToken(@NonNull User user) {
         LocalDateTime now = LocalDateTime.now();
         Instant refreshExpirationInstant = now.plusDays(30).atZone(ZoneId.systemDefault()).toInstant();
         Date refreshExpiration = Date.from(refreshExpirationInstant);

@@ -1,7 +1,7 @@
 package com.example.notes.service;
 
 import com.example.notes.domain.JwtAuthentication;
-import com.example.notes.domain.UserAuth;
+import com.example.notes.domain.User;
 import com.example.notes.dto.JwtRequest;
 import com.example.notes.dto.JwtResponse;
 import com.example.notes.exceptions.AuthException;
@@ -18,12 +18,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthSecurityService {
 
-    private final AuthUserService userService;
+    //private final AuthUserService userService;
+
+    private final UserService userService;
+
     private final JwtProvider jwtProvider;
     private final RefreshService refreshService;
 
     public JwtResponse login(@NonNull JwtRequest jwtRequest) {
-        UserAuth user = userService.getByLogin(jwtRequest.getLogin())
+        User user = userService.findByLogin(jwtRequest.getLogin())
                 .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED));
         if (user.getPassword().equals(jwtRequest.getPassword())) {
             String accessToken = jwtProvider.generateAccessToken(user);
@@ -41,7 +44,7 @@ public class AuthSecurityService {
             String login = claims.getSubject();
             String savedRefreshToken = refreshService.load(login);
             if (savedRefreshToken != null && savedRefreshToken.equals(refreshToken)) {
-                UserAuth user = userService.getByLogin(login)
+                User user = userService.findByLogin(login)
                         .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED));
                 String newAccessToken = jwtProvider.generateAccessToken(user);
                 return Optional.of(new JwtResponse(newAccessToken, null));
@@ -56,7 +59,7 @@ public class AuthSecurityService {
             String login = claims.getSubject();
             String savedRefreshToken = refreshService.load(login);
             if (savedRefreshToken != null && savedRefreshToken.equals(refreshToken)) {
-                UserAuth user = userService.getByLogin(login)
+                User user = userService.findByLogin(login)
                         .orElseThrow(() -> new AuthException(HttpStatus.UNAUTHORIZED));
                 String accessToken = jwtProvider.generateAccessToken(user);
                 String newRefreshToken = jwtProvider.generateRefreshToken(user);

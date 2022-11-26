@@ -1,7 +1,9 @@
 package com.example.notes.config;
 
+import com.example.notes.domain.RoleAuth;
 import com.example.notes.filter.JwtFilter;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.Role;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -32,10 +34,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/api/auth/login").permitAll()
                 .antMatchers("/api/auth/access").permitAll()
-                .antMatchers("/users/").permitAll()
-                .antMatchers("/users/**").permitAll()
-                .antMatchers("/themes/").permitAll()
-                .antMatchers("/themes/**").permitAll()
+                .antMatchers("/users/").hasRole(RoleAuth.ADMIN.getAuthority())
+                //.antMatchers("/users/**").permitAll()
                 .antMatchers("/v2/api-docs", "/v3/api-docs", "/configuration/ui", "/swagger-resources",
                         "/swagger-resources/**", "/configuration/**", "/swagger-ui.html", "/swagger-ui/**",
                         "/webjars/**", "/").permitAll()
