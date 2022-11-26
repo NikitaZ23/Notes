@@ -43,6 +43,14 @@ public class UserController {
         return mapper.map(user);
     }
 
+    @GetMapping("/login/{login}")
+    @ResponseStatus(code = HttpStatus.OK)
+    public UserDto findUserLogin(@PathVariable("login") final String login) {
+        final var user = userService.findByLogin(login)
+                .orElseThrow(() -> new UserNotFoundRestException(USER_NOT_FOUND));
+        return mapper.map(user);
+    }
+
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
     public UserDto createUser(@Valid @RequestBody final CreateUserRequest request) {

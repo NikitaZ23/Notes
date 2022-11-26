@@ -14,4 +14,6 @@ public interface UserServiceImp {
     Optional<User> update(@NotNull EditUserRequest request, UUID userId);
     void deleteUser(UUID userId);
     Optional<User> findByUuid(UUID userId);
+
+    Optional<User> findByLogin(String login);
 }

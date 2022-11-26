@@ -7,15 +7,19 @@ import com.example.notes.exceptions.UserNotFoundException;
 import com.example.notes.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class UserService implements UserServiceImp {
+public class UserService implements UserServiceImp, UserDetailsService {
     public static final String USER_NOT_FOUND_MESSAGE = "User Not Found";
 
     private final UserRepository userRepository;
@@ -54,5 +58,17 @@ public class UserService implements UserServiceImp {
     public void deleteUser(UUID userId) {
         User user = userRepository.findByUuid(userId).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MESSAGE));
         userRepository.delete(user);
+    }
+
+    @Override
+    public Optional<User> findByLogin(String login) {
+        return userRepository.findByLogin(login);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        User u = findByLogin(login).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MESSAGE));
+
+        return new org.springframework.security.core.userdetails.User(u.getLogin(), u.getPassword(), true, true, true, true, new HashSet<>());
     }
 }
