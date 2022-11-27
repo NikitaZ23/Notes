@@ -3,61 +3,23 @@ package com.example.notes.service;
 import com.example.notes.domain.User;
 import com.example.notes.dto.requests.CreateUserRequest;
 import com.example.notes.dto.requests.EditUserRequest;
-import com.example.notes.exceptions.UserNotFoundException;
-import com.example.notes.repository.UserRepository;
-import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
 
-@Service
-@AllArgsConstructor
-public class UserService implements UserServiceImp {
-    public static final String USER_NOT_FOUND_MESSAGE = "User Not Found";
+public interface UserService {
+    Iterable<User> findAll();
 
-    private final UserRepository userRepository;
+    User createUser(@NotNull CreateUserRequest user);
 
-    @Override
-    public Iterable<User> findAll() {
-        return userRepository.findAll();
-    }
+    Optional<User> update(@NotNull EditUserRequest request, UUID userId);
 
-    @Override
-    public Optional<User> findByUuid(UUID userId) {
-        return userRepository.findByUuid(userId);
-    }
+    void deleteUser(UUID userId);
 
-    @Override
-    public User createUser(@NotNull CreateUserRequest user) {
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
-        return userRepository.save(new User(user.getLogin(), passwordEncoder.encode(user.getPassword()), user.getUserName(), user.getIdRole()));
-    }
+    Optional<User> findByUuid(UUID userId);
 
-    @Transactional
-    @Override
-    public Optional<User> update(@NotNull EditUserRequest request, UUID userId) {
-        Optional<User> userOptional = userRepository.findByUuid(userId);
-        if (userOptional.isPresent()) {
-            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
+    Optional<User> findByLogin(String login);
 
-            User user = userOptional.get();
-            user.setUserName(request.getUserName());
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setIdRole(request.getIdRole());
-
-            return Optional.of(userRepository.save(user));
-        } else
-            return Optional.empty();
-    }
-
-    @Transactional
-    @Override
-    public void deleteUser(UUID userId) {
-        User user = userRepository.findByUuid(userId).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MESSAGE));
-        userRepository.delete(user);
-    }
+    long getCountRepository();
 }

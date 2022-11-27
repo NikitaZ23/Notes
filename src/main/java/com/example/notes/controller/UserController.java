@@ -7,7 +7,7 @@ import com.example.notes.exceptions.SuchUserExistsRestException;
 import com.example.notes.exceptions.UserNotFoundException;
 import com.example.notes.exceptions.UserNotFoundRestException;
 import com.example.notes.mapper.UserMapper;
-import com.example.notes.service.UserService;
+import com.example.notes.service.UserServiceImp;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ public class UserController {
     public static final String USER_NOT_FOUND = "User not found";
     public static final String SUCH_USER_EXISTS = "Such User Exists";
 
-    private final UserService userService;
+    private final UserServiceImp userService;
 
     private final UserMapper mapper;
 
