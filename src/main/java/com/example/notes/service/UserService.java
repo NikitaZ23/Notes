@@ -2,7 +2,7 @@ package com.example.notes.service;
 
 import com.example.notes.domain.User;
 import com.example.notes.dto.requests.CreateUserRequest;
-import com.example.notes.dto.requests.EditUserRequest;
+import com.example.notes.dto.requests.UpdateUserRequest;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -13,7 +13,7 @@ public interface UserService {
 
     User createUser(@NotNull CreateUserRequest user);
 
-    Optional<User> update(@NotNull EditUserRequest request, UUID userId);
+    Optional<User> updateUser(@NotNull UpdateUserRequest request, UUID userId);
 
     void deleteUser(UUID userId);
 

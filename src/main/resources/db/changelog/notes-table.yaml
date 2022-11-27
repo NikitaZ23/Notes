@@ -3,17 +3,17 @@ databaseChangeLog:
       id: 0
       author: Nikita.Zachvatov
       failOnError: true
-      comment: "Create table users"
+      comment: "Create table notes"
       changes:
         - createSequence:
-            sequenceName: hibernate_sequence_us
+            sequenceName: hibernate_sequence_nt
             incrementBy: 1
             cycle: false
             cacheSize: 1
             minValue: 1
             startValue: 1
         - createTable:
-            tableName: users
+            tableName: notes
             columns:
               - column:
                   name: uuid
@@ -25,17 +25,16 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: login
+                  name: header
                   type: varchar(50)
               - column:
-                  name: user_name
-                  type: varchar(50)
+                  name: text
+                  type: varchar(500)
               - column:
-                  name: password
-                  type: varchar(250)
-              - column:
-                  name: id_role
-                  type: varchar(50)
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
               - column:
                   name: created
                   type: datetime
@@ -44,18 +43,22 @@ databaseChangeLog:
                   type: datetime
         - addPrimaryKey:
             columnNames: id
-            tableName: users
+            tableName: notes
         - createIndex:
             clustered: true
             columns:
               - column:
                   descending: true
                   name: uuid
-            indexName: idx_uuid
+            indexName: idx_uuid_notes
             schemaName: public
-            tableName: users
+            tableName: notes
             unique: true
-        - addUniqueConstraint:
-            columnNames: login
-            constraintName: login_should_be_unique
-            tableName: users
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: notes
+            constraintName: FK_User_Note
+            deferrable: false
+            initiallyDeferred: false
+            referencedColumnNames: id
+            referencedTableName: users

@@ -2,7 +2,7 @@ package com.example.notes.controller;
 
 import com.example.notes.dto.UserDto;
 import com.example.notes.dto.requests.CreateUserRequest;
-import com.example.notes.dto.requests.EditUserRequest;
+import com.example.notes.dto.requests.UpdateUserRequest;
 import com.example.notes.exceptions.SuchUserExistsRestException;
 import com.example.notes.exceptions.UserNotFoundException;
 import com.example.notes.exceptions.UserNotFoundRestException;
@@ -32,9 +32,7 @@ public class UserController {
     @ResponseStatus(code = HttpStatus.OK)
     @PreAuthorize("hasAnyAuthority('developers:read')")
     public Iterable<UserDto> getAll() {
-        Iterable<UserDto> map = mapper.map(userService.findAll());
-        map.forEach(userDto -> System.out.println(userDto.toString()));
-        return map;
+        return mapper.map(userService.findAll());
     }
 
     @GetMapping("/{userId}")
@@ -74,9 +72,9 @@ public class UserController {
     @PutMapping("/{userId}")
     @ResponseStatus(code = HttpStatus.OK)
     @PreAuthorize("hasAnyAuthority('developers:read')")
-    public UserDto updateUser(@Valid @RequestBody final EditUserRequest request,
+    public UserDto updateUser(@Valid @RequestBody final UpdateUserRequest request,
                               @PathVariable("userId") final UUID uuid) {
-        final var user = userService.update(request, uuid)
+        final var user = userService.updateUser(request, uuid)
                 .orElseThrow(() -> new UserNotFoundRestException(USER_NOT_FOUND));
 
         return mapper.map(user);

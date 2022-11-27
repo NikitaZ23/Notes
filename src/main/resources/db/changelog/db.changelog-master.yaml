@@ -1,3 +1,7 @@
 databaseChangeLog:
   - include:
       file: classpath:/db/changelog/users-table.yaml
+  - include:
+      file: classpath:/db/changelog/notes-table.yaml
+#  - includeAll:
+#      path: classpath:/db/changelog/

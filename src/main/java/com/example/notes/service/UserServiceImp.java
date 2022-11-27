@@ -2,8 +2,9 @@ package com.example.notes.service;
 
 import com.example.notes.domain.User;
 import com.example.notes.dto.requests.CreateUserRequest;
-import com.example.notes.dto.requests.EditUserRequest;
+import com.example.notes.dto.requests.UpdateUserRequest;
 import com.example.notes.exceptions.UserNotFoundException;
+import com.example.notes.repository.NoteRepository;
 import com.example.notes.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +21,8 @@ public class UserServiceImp implements UserService {
     public static final String USER_NOT_FOUND_MESSAGE = "User Not Found";
 
     private final UserRepository userRepository;
+
+    private final NoteRepository noteRepository;
 
     @Override
     public Iterable<User> findAll() {
@@ -39,7 +42,7 @@ public class UserServiceImp implements UserService {
 
     @Transactional
     @Override
-    public Optional<User> update(@NotNull EditUserRequest request, UUID userId) {
+    public Optional<User> updateUser(@NotNull UpdateUserRequest request, UUID userId) {
         Optional<User> userOptional = userRepository.findByUuid(userId);
         if (userOptional.isPresent()) {
             BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
@@ -47,7 +50,6 @@ public class UserServiceImp implements UserService {
             User user = userOptional.get();
             user.setUserName(request.getUserName());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setIdRole(request.getIdRole());
 
             return Optional.of(userRepository.save(user));
         } else
@@ -58,6 +60,7 @@ public class UserServiceImp implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         User user = userRepository.findByUuid(userId).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MESSAGE));
+        noteRepository.findByUser_Id(user.getId()).forEach(note -> noteRepository.delete(note));
         userRepository.delete(user);
     }
 
