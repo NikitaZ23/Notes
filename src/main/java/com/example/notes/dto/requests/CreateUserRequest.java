@@ -13,13 +13,13 @@ import javax.validation.constraints.Size;
 @NoArgsConstructor
 public class CreateUserRequest {
     @NotBlank(message = "Login may not be empty")
-    @Size(min = 2, max = 32)
+    @Size(min = 4, max = 32)
     String login;
     @NotBlank(message = "Password may not be empty")
     @Size(min = 5, max = 32)
     String password;
     @NotBlank(message = "Name may not be empty")
-    @Size(min = 5, max = 32)
+    @Size(min = 2, max = 32)
     String userName;
     Role idRole;
 }

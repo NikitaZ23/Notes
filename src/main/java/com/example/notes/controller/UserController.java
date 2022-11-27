@@ -11,6 +11,7 @@ import com.example.notes.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -29,6 +30,7 @@ public class UserController {
 
     @GetMapping
     @ResponseStatus(code = HttpStatus.OK)
+    @PreAuthorize("hasAnyAuthority('developers:read')")
     public Iterable<UserDto> getAll() {
         Iterable<UserDto> map = mapper.map(userService.findAll());
         map.forEach(userDto -> System.out.println(userDto.toString()));
@@ -37,22 +39,16 @@ public class UserController {
 
     @GetMapping("/{userId}")
     @ResponseStatus(code = HttpStatus.OK)
+    @PreAuthorize("hasAnyAuthority('developers:read')")
     public UserDto findUser(@PathVariable("userId") final UUID uuid) {
         final var user = userService.findByUuid(uuid)
                 .orElseThrow(() -> new UserNotFoundRestException(USER_NOT_FOUND));
         return mapper.map(user);
     }
 
-    @GetMapping("/login/{login}")
-    @ResponseStatus(code = HttpStatus.OK)
-    public UserDto findUserLogin(@PathVariable("login") final String login) {
-        final var user = userService.findByLogin(login)
-                .orElseThrow(() -> new UserNotFoundRestException(USER_NOT_FOUND));
-        return mapper.map(user);
-    }
-
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
+    @PreAuthorize("hasAnyAuthority('developers:write')")
     public UserDto createUser(@Valid @RequestBody final CreateUserRequest request) {
         try {
             final var user = userService.createUser(request);
@@ -65,6 +61,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     @ResponseStatus(code = HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyAuthority('developers:write')")
     public void deleteUser(@PathVariable("userId") final UUID uuid) {
         try {
             userService.deleteUser(uuid);
@@ -76,6 +73,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     @ResponseStatus(code = HttpStatus.OK)
+    @PreAuthorize("hasAnyAuthority('developers:read')")
     public UserDto updateUser(@Valid @RequestBody final EditUserRequest request,
                               @PathVariable("userId") final UUID uuid) {
         final var user = userService.update(request, uuid)

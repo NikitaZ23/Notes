@@ -28,7 +28,7 @@ public class User {
     private UUID uuid = UUID.randomUUID();
 
     @Column(name = "\"login\"", nullable = false, unique = true)
-    @Size(min = 5, message = "Не меньше 5 знаков")
+    @Size(min = 4, message = "Не меньше 5 знаков")
     private String login;
 
     @Column(name = "\"password\"")
@@ -36,7 +36,7 @@ public class User {
     private String password;
 
     @Column(name = "\"user_name\"", nullable = false)
-    @Size(min = 5, message = "Не меньше 5 знаков")
+    @Size(min = 2, message = "Не меньше 5 знаков")
     private String userName;
 
     @Column(name = "\"id_role\"", nullable = false)

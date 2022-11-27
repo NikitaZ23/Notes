@@ -7,19 +7,16 @@ import com.example.notes.exceptions.UserNotFoundException;
 import com.example.notes.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class UserService implements UserServiceImp, UserDetailsService {
+public class UserService implements UserServiceImp {
     public static final String USER_NOT_FOUND_MESSAGE = "User Not Found";
 
     private final UserRepository userRepository;
@@ -36,7 +33,8 @@ public class UserService implements UserServiceImp, UserDetailsService {
 
     @Override
     public User createUser(@NotNull CreateUserRequest user) {
-        return userRepository.save(new User(user.getLogin(), user.getPassword(), user.getUserName(), user.getIdRole()));
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
+        return userRepository.save(new User(user.getLogin(), passwordEncoder.encode(user.getPassword()), user.getUserName(), user.getIdRole()));
     }
 
     @Transactional
@@ -44,10 +42,13 @@ public class UserService implements UserServiceImp, UserDetailsService {
     public Optional<User> update(@NotNull EditUserRequest request, UUID userId) {
         Optional<User> userOptional = userRepository.findByUuid(userId);
         if (userOptional.isPresent()) {
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
+
             User user = userOptional.get();
             user.setUserName(request.getUserName());
-            user.setPassword(request.getPassword());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
             user.setIdRole(request.getIdRole());
+
             return Optional.of(userRepository.save(user));
         } else
             return Optional.empty();
@@ -58,17 +59,5 @@ public class UserService implements UserServiceImp, UserDetailsService {
     public void deleteUser(UUID userId) {
         User user = userRepository.findByUuid(userId).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MESSAGE));
         userRepository.delete(user);
-    }
-
-    @Override
-    public Optional<User> findByLogin(String login) {
-        return userRepository.findByLogin(login);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
-        User u = findByLogin(login).orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND_MESSAGE));
-
-        return new org.springframework.security.core.userdetails.User(u.getLogin(), u.getPassword(), true, true, true, true, new HashSet<>());
     }
 }
