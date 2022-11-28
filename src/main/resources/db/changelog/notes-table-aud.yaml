@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Nikita.Zachvatov
+      failOnError: true
+      comment: "Create table notes_aud"
+      changes:
+        - createTable:
+            tableName: notes_aud
+            columns:
+              - column:
+                  name: id
+                  type: integer
+#                  autoIncrement: true
+                  constraints:
+#                      primaryKey: true
+#                      primaryKeyName: notes_aud_pk
+                      nullable: false
+              - column:
+                  name: header
+                  type: varchar(50)
+              - column:
+                  name: text
+                  type: varchar(500)
+              - column:
+                  name: REV
+                  type: integer
+              - column:
+                  name: REVTYPE
+                  type: integer
+              - column:
+                  name: created
+                  type: datetime
+              - column:
+                  name: modified
+                  type: datetime
+        - addForeignKeyConstraint:
+            baseColumnNames: REV
+            baseTableName: notes_aud
+            constraintName: FK_Notes_REVINFO
+            deferrable: false
+            initiallyDeferred: false
+            referencedColumnNames: REV
+            referencedTableName: REVINFO

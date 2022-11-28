@@ -6,7 +6,7 @@ databaseChangeLog:
       comment: "Create table notes"
       changes:
         - createSequence:
-            sequenceName: hibernate_sequence_nt
+            sequenceName: hibernate_sequence
             incrementBy: 1
             cycle: false
             cacheSize: 1

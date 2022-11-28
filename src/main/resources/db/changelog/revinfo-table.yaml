@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0
+      author: Nikita.Zachvatov
+      failOnError: true
+      comment: "Create table REVINFO"
+      changes:
+        - createTable:
+            tableName: REVINFO
+            columns:
+              - column:
+                  name: REV
+                  type: integer
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: REVTSTMP
+                  type: BIGINT
+        - addPrimaryKey:
+            columnNames: REV
+            tableName: REVINFO

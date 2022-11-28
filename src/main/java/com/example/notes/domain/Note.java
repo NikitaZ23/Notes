@@ -3,6 +3,9 @@ package com.example.notes.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.envers.AuditJoinTable;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -16,13 +19,15 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Audited
 public class Note {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "note_seq")
-    @SequenceGenerator(name = "note_seq", sequenceName = "hibernate_sequence_nt", allocationSize = 1)
+    @SequenceGenerator(name = "note_seq", sequenceName = "hibernate_sequence", allocationSize = 1)
     private int id;
 
     @Column(name = "\"uuid\"", nullable = false)
+    @NotAudited
     private UUID uuid = UUID.randomUUID();
 
     @Column(name = "\"header\"", nullable = false)
@@ -35,6 +40,7 @@ public class Note {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @NotAudited
     private User user;
 
     @CreatedDate
