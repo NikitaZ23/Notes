@@ -37,7 +37,6 @@ public class NoteController {
     @ResponseStatus(code = HttpStatus.OK)
     @PreAuthorize("hasAnyAuthority('developers:read')")
     public Iterable<NoteDto> findNote(@PathVariable("noteId") final int id) {
-        //Note note = noteService.findByUuid(uuid);.orElseThrow(() -> new NoteNotFoundRestException(NOTE_NOT_FOUND_MESSAGE));
         return mapper.map(noteService.findByUser_Id(id));
     }
 
