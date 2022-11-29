@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: classpath:/db/changelog/users-table.yaml
+  - include:
+      file: classpath:/db/changelog/notes-table.yaml
+  - include:
+      file: classpath:/db/changelog/revinfo-table.yaml
+  - include:
+      file: classpath:/db/changelog/notes-table-aud.yaml

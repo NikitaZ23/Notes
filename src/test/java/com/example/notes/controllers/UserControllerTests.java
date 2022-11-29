@@ -1,12 +1,12 @@
 package com.example.notes.controllers;
 
-import com.example.projectforgit2.configuration.ProfileConfigurationTests;
-import com.example.projectforgit2.domain.Profile;
-import com.example.projectforgit2.dto.ProfileDto;
-import com.example.projectforgit2.dto.requests.CreateProfileRequests;
-import com.example.projectforgit2.service.ProfileService;
+import com.example.notes.common.Role;
+import com.example.notes.configuration.ConfigurationTests;
+import com.example.notes.domain.User;
+import com.example.notes.service.UserServiceImp;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import org.junit.Before;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -14,169 +14,62 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
-import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@ContextConfiguration(classes = ProfileConfigurationTests.class)
+@ContextConfiguration(classes = ConfigurationTests.class)
+@WithMockUser(username = "admin", roles = {"ADMIN"})
 public class UserControllerTests {
 
     @MockBean
-    ProfileService service;
+    UserServiceImp service;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     ObjectMapper objectMapper;
 
     @Autowired
-    MockMvc mockMvc;
+    private WebApplicationContext context;
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Before
+    public void setup() {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(SecurityMockMvcConfigurers.springSecurity())
+                .build();
+    }
 
     @SneakyThrows
     @Test
-    @DisplayName("Получение профиля")
-    public void getProfileTest() {
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
+    @DisplayName("Получение пользователя")
+    public void getUserTest() {
+        User user = new User("user", "user", "user", Role.User);
 
-        Mockito.when(service.findProfile(Mockito.any())).thenReturn(Optional.of(profile));
+        Mockito.when(service.findByUuid(Mockito.any())).thenReturn(Optional.of(user));
 
         mockMvc.perform(
-                        get("/profiles/7207d531-0e01-4cd0-ba0a-02f7c0c8fb2d")
+                        MockMvcRequestBuilders.get("/users/7207d531-0e01-4cd0-ba0a-02f7c0c8fb2d")
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Alex"))
-                .andExpect(jsonPath("$.surname").value("Zar"));
+                .andExpect(jsonPath("$.login").value("user"))
+                .andExpect(jsonPath("$.password").value("user"))
+                .andExpect(jsonPath("$.userName").value("user"));
     }
-
-    @SneakyThrows
-    @Test
-    @DisplayName("Получение профилей")
-    public void getProfilesTest() {
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
-        Profile profile2 = new Profile("Alex2", "Zar", "Male", LocalDate.now());
-
-        Mockito.when(service.findAll()).thenReturn(Arrays.asList(profile, profile2));
-
-        mockMvc.perform(
-                        get("/profiles/")
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(Arrays.asList(
-                        new ProfileDto(profile.getId(), profile.getUuid(), profile.getName(), profile.getSurname(), profile.getSex(), profile.getBirthday(), profile.getSignUpDate(), profile.getLastVisitDate()),
-                        new ProfileDto(profile2.getId(), profile2.getUuid(), profile2.getName(), profile2.getSurname(), profile2.getSex(), profile2.getBirthday(), profile2.getSignUpDate(), profile2.getLastVisitDate())))));
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("Проверка создания профиля")
-    public void createProfileTest() {
-        CreateProfileRequests request = new CreateProfileRequests("Alex", "Zar", "Male", LocalDate.now());
-
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
-        Mockito.when(service.createProfile(Mockito.any())).thenReturn(profile);
-
-        mockMvc.perform(
-                        post("/profiles")
-                                .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("Alex"))
-                .andExpect(jsonPath("$.surname").value("Zar"));
-
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("Проверка обновления профиля")
-    public void updateProfileTest() {
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
-        Profile profile2 = new Profile("Alex2", "Zar2", "Male", LocalDate.now());
-
-        Mockito.when(service.findProfile(Mockito.any())).thenReturn(Optional.of(profile));
-        Mockito.when(service.updateProfile(Mockito.any(), Mockito.any())).thenReturn(Optional.of(profile2));
-
-        mockMvc.perform(
-                        put("/profiles/7207d531-0e01-4cd0-ba0a-02f7c0c8fb2d")
-                                .content(objectMapper.writeValueAsString(new CreateProfileRequests("Alex", "Zar", "Male", LocalDate.now())))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Alex2"))
-                .andExpect(jsonPath("$.surname").value("Zar2"));
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("Проверка удаления профиля")
-    public void deleteProfileTest() {
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
-
-        Mockito.when(service.findProfile(Mockito.any())).thenReturn(Optional.of(profile));
-
-        mockMvc.perform(
-                        delete("/profiles/" + profile.getUuid().toString()))
-                .andExpect(status().isNoContent());
-
-        System.out.println(profile);
-    }
-
-    @SneakyThrows
-    @Test
-    @DisplayName("Получение профиля с ошибкой")
-    public void getProfileTestExceptions() {
-        CreateProfileRequests request = new CreateProfileRequests("Alex", "Zar", "Male", LocalDate.now());
-
-        Mockito.when(service.findProfile(Mockito.any())).thenReturn(Optional.empty());
-
-        Throwable thrown = catchThrowable(() -> mockMvc.perform(
-                                get("/profiles/7207d531-0e01-4cd0-ba0a-02f7c0c8fb2d")
-                                        .content(objectMapper.writeValueAsString(request))
-                                        .contentType(MediaType.APPLICATION_JSON)
-                        )
-                        .andExpect(status().isOk())
-        );
-
-        assertThat(thrown).isInstanceOf(AssertionError.class);
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("Проверка обновления профиля с ошибкой")
-    public void updateProfileTestExceptions() {
-        Mockito.when(service.findProfile(Mockito.any())).thenReturn(Optional.empty());
-        Mockito.when(service.updateProfile(Mockito.any(), Mockito.any())).thenReturn(Optional.empty());
-
-        Throwable thrown = catchThrowable(() -> mockMvc.perform(
-                        put("/profiles/7207d531-0e01-4cd0-ba0a-02f7c0c8fb2d")
-                                .content(objectMapper.writeValueAsString(new CreateProfileRequests("Alex", "Zar", "Male", LocalDate.now())))
-                                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-        );
-
-        assertThat(thrown).isInstanceOf(AssertionError.class);
-    }
-
-    @Test
-    @SneakyThrows
-    @DisplayName("Проверка удаления профиля с ошибкой")
-    public void deleteProfileTestExceptions() {
-        Mockito.when(service.findProfile(Mockito.any())).thenReturn(Optional.empty());
-
-        Throwable thrown = catchThrowable(() -> mockMvc.perform(
-                        delete("/profiles/7207d531-0e01-4cd0-ba0a-02f7c0c8fb2d"))
-                .andExpect(status().isNotFound())
-        );
-
-        assertThat(thrown).isInstanceOf(AssertionError.class);
-    }
+//Как исправить 403 ошибку в данном случае я не знаю, хотелсь бы узнать ваше мнение по этому вопросу
 }

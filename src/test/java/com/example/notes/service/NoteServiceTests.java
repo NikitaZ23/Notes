@@ -1,9 +1,12 @@
 package com.example.notes.service;
 
-import com.example.projectforgit2.domain.Profile;
-import com.example.projectforgit2.dto.requests.CreateProfileRequests;
-import com.example.projectforgit2.exceptions.ProfileNotFoundExceptions;
-import com.example.projectforgit2.repository.ProfileRepository;
+import com.example.notes.common.Role;
+import com.example.notes.domain.Note;
+import com.example.notes.domain.User;
+import com.example.notes.dto.requests.CreateNoteRequest;
+import com.example.notes.dto.requests.UpdateNoteRequest;
+import com.example.notes.exceptions.NoteNotFoundException;
+import com.example.notes.repository.NoteRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,89 +25,112 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 @ExtendWith(MockitoExtension.class)
 public class NoteServiceTests {
     @Mock
-    ProfileRepository repository;
+    UserServiceImp userService;
+
+    @Mock
+    NoteRepository noteRepository;
 
     @InjectMocks
-    ProfileService service;
+    NoteServiceImp service;
 
     @Test
-    @DisplayName("Проверка создания профиля")
-    public void createProfileTest() {
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
+    @DisplayName("Проверка создания записи")
+    public void createNoteTest() {
+        User user = new User("user", "user", "user", Role.User);
+        Note note = new Note("hi", "everyone", user);
 
-        Mockito.when(repository.save(Mockito.any())).thenReturn(profile);
+        Mockito.when(noteRepository.save(Mockito.any())).thenReturn(note);
+        Mockito.when(userService.findByUuid(Mockito.any())).thenReturn(Optional.of(user));
 
-        Profile serviceProfile = service.createProfile(new CreateProfileRequests("Alex", "Zar", "Male", LocalDate.now()));
+        Note serviceNote = service.createNote(new CreateNoteRequest(UUID.randomUUID(), "hi", "everyone"));
 
-        assertThat(serviceProfile).isEqualTo(profile);
+        assertThat(serviceNote).isEqualTo(note);
     }
 
     @Test
     @DisplayName("Проверка обновления репозитория")
-    public void updateProfileTest() {
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
-        Profile profile2 = new Profile("Oleg", "Zar", "Male", LocalDate.now());
+    public void updateNoteTest() {
+        User user = new User("user", "user", "user", Role.User);
+        Note note = new Note("hi", "everyone", user);
+        Note note2 = new Note("hi2", "everyone2", user);
 
-        Mockito.when(repository.findByUuid(Mockito.any())).thenReturn(Optional.of(profile));
-        Mockito.when(repository.save(Mockito.any())).thenReturn(profile2);
+        Mockito.when(noteRepository.findByUuid(Mockito.any())).thenReturn(Optional.of(note));
+        Mockito.when(noteRepository.save(Mockito.any())).thenReturn(note2);
 
-        Optional<Profile> updateProfile = service.updateProfile(new CreateProfileRequests("Oleg", "Zar", "Male", LocalDate.now()), UUID.randomUUID());
+        Optional<Note> updateNote = service.updateNote(new UpdateNoteRequest("hi2", "everyone2"), UUID.randomUUID());
 
-        assertThat(updateProfile).isEqualTo(Optional.of(profile2));
+        assertThat(updateNote).isEqualTo(Optional.of(note2));
     }
 
     @Test
-    @DisplayName("Проверка получения профиля")
-    public void findProfileTest() {
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
+    @DisplayName("Проверка получения записи")
+    public void findNoteTest() {
+        User user = new User("user", "user", "user", Role.User);
+        Note note = new Note("hi", "everyone", user);
 
-        Mockito.when(repository.findByUuid(Mockito.any())).thenReturn(Optional.of(profile));
+        Mockito.when(noteRepository.findByUuid(Mockito.any())).thenReturn(Optional.of(note));
 
-        Optional<Profile> serviceProfile = service.findProfile(UUID.randomUUID());
+        Optional<Note> serviceNote = service.findByUuid(UUID.randomUUID());
 
-        assertThat(Optional.of(profile)).isEqualTo(serviceProfile);
+        assertThat(Optional.of(note)).isEqualTo(serviceNote);
     }
 
     @Test
-    @DisplayName("Проверка получения всех профилей")
+    @DisplayName("Проверка получения всех записей")
     public void findAllTest() {
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
-        Profile profile2 = new Profile("Oleg", "Pal", "Male", LocalDate.now());
+        User user = new User("user", "user", "user", Role.User);
+        Note note = new Note("hi", "everyone", user);
+        Note note2 = new Note("hi2", "everyone2", user);
 
-        Mockito.when(repository.findAll()).thenReturn(Arrays.asList(profile, profile2));
+        Mockito.when(noteRepository.findAll()).thenReturn(Arrays.asList(note, note2));
 
-        Iterable<Profile> profiles = service.findAll();
+        Iterable<Note> notes = service.findAll();
 
-        assertThat(Arrays.asList(profile, profile2)).isEqualTo(profiles);
+        assertThat(Arrays.asList(note, note2)).isEqualTo(notes);
+    }
+
+    @Test
+    @DisplayName("Проверка получения записей по user_id")
+    public void findByUser_IdTest() {
+        User user = new User("user", "user", "user", Role.User);
+        Note note = new Note("hi", "everyone", user);
+        Note note2 = new Note("hi2", "everyone2", user);
+
+        Mockito.when(noteRepository.findByUser_Id(Mockito.anyInt())).thenReturn(Arrays.asList(note, note2));
+
+        Iterable<Note> notes = service.findByUser_Id(user.getId());
+
+        assertThat(Arrays.asList(note, note2)).isEqualTo(notes);
     }
 
     @Test
     @DisplayName("Проверка получения пустого репозитория")
     public void findAllEmptyTest() {
-        Iterable<Profile> profiles = service.findAll();
+        Iterable<Note> notes = service.findAll();
 
-        assertThat(profiles).isEmpty();
+        assertThat(notes).isEmpty();
     }
 
     @Test
-    @DisplayName("Проверка получения удаления профиля")
-    public void deleteProfileTest() {
-        Profile profile = new Profile("Alex", "Zar", "Male", LocalDate.now());
+    @DisplayName("Проверка получения удаления записи")
+    public void deleteNoteTest() {
+        User user = new User("user", "user", "user", Role.User);
+        Note note = new Note("hi", "everyone", user);
 
-        Mockito.when(repository.findByUuid(Mockito.any())).thenReturn(Optional.of(profile));
+        Mockito.when(noteRepository.findByUuid(Mockito.any())).thenReturn(Optional.of(note));
 
-        service.deleteProfile(UUID.randomUUID());
+        service.deleteNote(UUID.randomUUID());
 
-        assertThat(repository.count()).isEqualTo(0);
+        assertThat(noteRepository.count()).isEqualTo(0);
     }
 
     @Test
-    @DisplayName("Проверка вызова ошибки при поиске по uuid профиля")
+    @DisplayName("Проверка вызова ошибки при поиске по uuid записи")
     public void findByUuidTestWithException() {
-        Mockito.when(repository.findByUuid(Mockito.any())).thenThrow(ProfileNotFoundExceptions.class);
+        Mockito.when(noteRepository.findByUuid(Mockito.any())).thenThrow(NoteNotFoundException.class);
 
-        Throwable throwable = catchThrowable(() -> service.findProfile(UUID.randomUUID()));
+        Throwable throwable = catchThrowable(() -> service.findByUuid(UUID.randomUUID()));
 
-        assertThat(throwable).isInstanceOf(ProfileNotFoundExceptions.class);
+        assertThat(throwable).isInstanceOf(NoteNotFoundException.class);
     }
 }
